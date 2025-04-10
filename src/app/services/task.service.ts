@@ -29,6 +29,7 @@ export class TaskService {
   }
 
   getTaskStats(): Observable<{ total: number; completed: number; pending: number }> {
-    return this.http.get<{ total: number; completed: number; pending: number }>(`${this.baseUrl}`);
+    return this.http.get<{ total: number; completed: number; pending: number }>(`${this.baseUrl}/stats`);
   }
+
 }

@@ -51,3 +51,5 @@ input:focus, select:focus, textarea:focus {
 .text-gray-600 {
   color: var(--text-color);
 }
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

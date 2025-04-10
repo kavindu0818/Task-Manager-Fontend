@@ -7,109 +7,131 @@ import { Task } from '../../models/task.model';
 import { TaskFormComponent } from './task-form.component';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import {animate, style, transition, trigger} from "@angular/animations";
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [CommonModule, TaskFormComponent, FormsModule],
+  imports: [CommonModule, TaskFormComponent, FormsModule, MatButtonModule, MatInputModule, MatSelectModule, MatCardModule, MatIconModule, MatSnackBarModule],
   template: `
-    <div class="min-h-screen">
-      <nav class="bg-task-orange p-4 shadow-lg">
+    <div class="min-h-screen bg-dark-theme">
+      <!-- Header -->
+      <nav class="mat-elevation-z4 bg-task-dark-orange p-4">
         <div class="container mx-auto flex justify-between items-center">
           <h1 class="text-2xl font-bold text-white">TaskMaster</h1>
           <div class="flex items-center space-x-4">
-            <button (click)="toggleTheme()"
-                    class="px-4 py-2 rounded-lg bg-white text-task-orange hover:bg-opacity-90 transition">
+            <button mat-button (click)="toggleTheme()" class="px-4 py-2 rounded-lg bg-white text-task-orange hover:bg-opacity-90 transition">
               🌓 Theme
             </button>
-            <button (click)="logout()"
-                    class="px-4 py-2 rounded-lg bg-white text-task-orange hover:bg-opacity-90 transition">
+            <button mat-button (click)="logout()" class="px-4 py-2 rounded-lg bg-white text-task-orange hover:bg-opacity-90 transition">
               Logout
             </button>
           </div>
         </div>
       </nav>
 
-      <div class="container mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div class="task-card p-6 rounded-xl shadow-lg">
-            <h3 class="text-xl font-semibold mb-2">Total Tasks</h3>
-            <p class="text-4xl font-bold text-task-orange">{{ stats.total }}</p>
-          </div>
-          <div class="task-card p-6 rounded-xl shadow-lg">
-            <h3 class="text-xl font-semibold mb-2">Completed</h3>
-            <p class="text-4xl font-bold text-green-500">{{ stats.completed }}</p>
-          </div>
-          <div class="task-card p-6 rounded-xl shadow-lg">
-            <h3 class="text-xl font-semibold mb-2">Pending</h3>
-            <p class="text-4xl font-bold text-yellow-500">{{ stats.pending }}</p>
-          </div>
-        </div>
+      <div class="text-center mt-8 mb-8">
+        <h2 class="text-3xl font-bold text-task-orange mb-2">Your Tasks</h2>
+        <p class="text-lg text-gray-400">Welcome back! Here's your task overview.</p>
+      </div>
+      <!-- Stats Section (Center Aligned) -->
+      <div class="flex justify-center items-center mt-8">
+        <mat-card class="task-card p-6 w-1/4 rounded-xl shadow-lg border border-gray-300">
+          <h3 class="text-xl font-semibold mb-2">Total Tasks</h3>
+          <p class="text-4xl font-bold text-task-orange">{{ stats.total }}</p>
+        </mat-card>
 
-        <app-task-form (taskAdded)="refreshStats()"></app-task-form>
+        <mat-card class="task-card p-6 w-1/4 rounded-xl shadow-lg border border-gray-300 mx-4">
+          <h3 class="text-xl font-semibold mb-2">Completed</h3>
+          <p class="text-4xl font-bold text-green-500">{{ stats.completed }}</p>
+        </mat-card>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-          <div *ngFor="let task of tasks$ | async; trackBy: trackById" class="task-card p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-            <div class="flex justify-between items-start mb-4">
-              <div class="flex-grow">
-                <div *ngIf="editingTaskId === task.id; else displayTask">
-                  <input type="text" [(ngModel)]="editingTask.title" class="w-full px-3 py-2 mb-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
-                  <textarea [(ngModel)]="editingTask.description" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange"></textarea>
-                </div>
-                <ng-template #displayTask>
-                  <h3 class="text-xl font-semibold mb-2">{{ task.title }}</h3>
-                  <p class="text-sm text-gray-500">Created by John Doe</p>
-                </ng-template>
+        <mat-card class="task-card p-6 w-1/4 rounded-xl shadow-lg border border-gray-300">
+          <h3 class="text-xl font-semibold mb-2">Pending</h3>
+          <p class="text-4xl font-bold text-yellow-500">{{ stats.pending }}</p>
+        </mat-card>
+      </div>
+
+      <!-- Task Form -->
+
+      <!-- Task List Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+        <div *ngFor="let task of tasks$ | async; trackBy: trackById"
+             class="task-card p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300"
+             [@fadeInOut]>
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex-grow">
+              <div *ngIf="editingTaskId === task.id; else displayTask">
+                <mat-form-field appearance="fill" class="w-full mb-2">
+                  <input matInput [(ngModel)]="editingTask.title" placeholder="Task Title" class="w-full">
+                </mat-form-field>
+                <mat-form-field appearance="fill" class="w-full mb-2">
+                  <textarea matInput [(ngModel)]="editingTask.description" placeholder="Task Description" rows="3" class="w-full"></textarea>
+                </mat-form-field>
               </div>
-              <div class="flex space-x-2">
-                <div *ngIf="editingTaskId === task.id; else actionButtons">
-                  <button (click)="saveTask()" class="p-2 rounded-full hover:bg-green-100 text-green-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                  </button>
-                  <button (click)="cancelEdit()" class="p-2 rounded-full hover:bg-red-100 text-red-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                    </svg>
-                  </button>
-                </div>
-                <ng-template #actionButtons>
-                  <button (click)="startEdit(task)" class="p-2 rounded-full hover:bg-blue-100 text-blue-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                    </svg>
-                  </button>
-                  <button (click)="deleteTask(task.id)" class="p-2 rounded-full hover:bg-red-100 text-red-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                    </svg>
-                  </button>
-                  <button (click)="toggleTaskStatus(task)" class="p-2 rounded-full transition-colors" [ngClass]="task.status === 'completed' ? 'text-green-500 hover:bg-green-100' : 'text-yellow-500 hover:bg-yellow-100'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                  </button>
-                </ng-template>
+              <ng-template #displayTask>
+                <h3 class="text-xl font-semibold mb-2">{{ task.title }}</h3>
+                <p class="text-sm text-gray-500">Created by John Doe</p>
+              </ng-template>
+            </div>
+            <div class="flex space-x-2">
+              <div *ngIf="editingTaskId === task.id; else actionButtons">
+                <button mat-icon-button (click)="saveTask()">
+                  <mat-icon>check</mat-icon>
+                </button>
+                <button mat-icon-button (click)="cancelEdit()">
+                  <mat-icon>cancel</mat-icon>
+                </button>
               </div>
+              <ng-template #actionButtons>
+                <button mat-icon-button (click)="startEdit(task)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="deleteTask(task.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-icon-button (click)="toggleTaskStatus(task)">
+                  <mat-icon>{{ task.status === 'completed' ? 'undo' : 'check_circle' }}</mat-icon>
+                </button>
+              </ng-template>
             </div>
+          </div>
 
-            <div *ngIf="editingTaskId !== task.id">
-              <p class="text-gray-600 dark:text-gray-300 mb-4">{{ task.description }}</p>
-            </div>
+          <app-task-form (taskAdded)="refreshStats()"></app-task-form>
 
-            <div class="flex justify-between items-center">
-              <select [(ngModel)]="task.status" (change)="updateTaskStatus(task)" class="px-3 py-1 rounded-lg border focus:outline-none focus:ring-2 focus:ring-task-orange">
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-              </select>
-              <span class="text-sm text-gray-500">{{ task.createdAt | date:'MMM d, y, h:mm a' }}</span>
-            </div>
+          <div *ngIf="editingTaskId !== task.id">
+            <p class="text-gray-600 dark:text-gray-300 mb-4">{{ task.description }}</p>
+          </div>
+
+          <div class="flex justify-between items-center">
+            <mat-select [(ngModel)]="task.status" (change)="updateTaskStatus(task)" class="w-full">
+              <mat-option value="pending">Pending</mat-option>
+              <mat-option value="completed">Completed</mat-option>
+            </mat-select>
+            <span class="text-sm text-gray-500">{{ task.createdAt | date:'MMM d, y, h:mm a' }}</span>
           </div>
         </div>
       </div>
     </div>
-  `
+
+  `,
+  animations: [
+    trigger('fadeInOut', [
+      transition('void => *', [
+        style({ opacity: 0 }),
+        animate(300, style({ opacity: 1 }))
+      ]),
+      transition('* => void', [
+        animate(300, style({ opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class TaskListComponent implements OnInit {
   tasks$ = this.taskService.getTasks();
@@ -175,9 +197,11 @@ export class TaskListComponent implements OnInit {
 
   refreshStats() {
     this.taskService.getTaskStats().subscribe((stats) => {
+      console.log('Fetched Stats:', stats); // Log the stats to verify
       this.stats = stats;
     });
   }
+
 
   toggleTheme() {
     this.themeService.toggleTheme();

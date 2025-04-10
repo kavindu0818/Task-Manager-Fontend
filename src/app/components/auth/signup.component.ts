@@ -3,57 +3,75 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import {MatFormField} from "@angular/material/input";
 // import {name} from "tailwindcss";
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, CommonModule],
+  imports: [ReactiveFormsModule, RouterLink, CommonModule, MatFormField],
   template: `
     <div class="min-h-screen flex items-center justify-center">
       <div class="bg-white p-8 rounded-lg shadow-lg w-96 task-card">
         <h2 class="text-3xl font-bold mb-6 text-center">Sign Up</h2>
         <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Name</label>
-            <input type="text" formControlName="name"
-                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
-            <div *ngIf="signupForm.get('name')?.touched && signupForm.get('name')?.invalid">
-              <p class="text-red-500 text-sm mt-1">Name is required</p>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Email</label>
-            <input type="email" formControlName="email"
-                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
-            <div *ngIf="signupForm.get('email')?.touched && signupForm.get('email')?.invalid">
-              <p class="text-red-500 text-sm mt-1">Please enter a valid email</p>
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Password</label>
-            <input type="password" formControlName="password"
-                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
-            <div *ngIf="signupForm.get('password')?.touched && signupForm.get('password')?.invalid">
-              <p class="text-red-500 text-sm mt-1">Password must be at least 6 characters</p>
-            </div>
-          </div>
+
+          <!-- Name Input -->
+          <mat-form-field class="w-full">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name" placeholder="Enter your name"
+                   [class.is-invalid]="signupForm.get('name')?.touched && signupForm.get('name')?.invalid">
+            <mat-error *ngIf="signupForm.get('name')?.touched && signupForm.get('name')?.invalid">
+              Name is required
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Email Input -->
+          <mat-form-field class="w-full">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" placeholder="Enter your email"
+                   [class.is-invalid]="signupForm.get('email')?.touched && signupForm.get('email')?.invalid">
+            <mat-error *ngIf="signupForm.get('email')?.touched && signupForm.get('email')?.invalid">
+              Please enter a valid email
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password Input -->
+          <mat-form-field class="w-full">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" formControlName="password" placeholder="Enter your password"
+                   [class.is-invalid]="signupForm.get('password')?.touched && signupForm.get('password')?.invalid">
+            <mat-error *ngIf="signupForm.get('password')?.touched && signupForm.get('password')?.invalid">
+              Password must be at least 6 characters
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Error Message -->
           <div *ngIf="errorMessage">
             <p class="text-red-500 text-sm text-center">{{ errorMessage }}</p>
           </div>
-          <button type="submit"
+
+          <!-- Submit Button -->
+          <button mat-raised-button
+                  type="submit"
                   [disabled]="!signupForm.valid"
-                  [ngClass]="signupForm.valid ? 'w-full bg-task-orange text-white py-2 rounded-lg hover:opacity-90 transition' : 'w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed'">
+                  [ngClass]="{
+                'bg-task-orange text-white': signupForm.valid,
+                'bg-gray-300 text-gray-500': !signupForm.valid
+              }"
+                  class="w-full py-2 rounded-lg hover:opacity-90 transition">
             Sign Up
           </button>
         </form>
 
+        <!-- Login link -->
         <p class="mt-4 text-center">
-          Already have an account? 
+          Already have an account?
           <a routerLink="/login" class="text-task-orange hover:underline">Login</a>
         </p>
       </div>
     </div>
+
   `
 })
 export class SignupComponent {

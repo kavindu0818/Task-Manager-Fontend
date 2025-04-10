@@ -1,31 +1,41 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TaskService } from '../../services/task.service';
+import {MatFormField} from "@angular/material/input";
 
 @Component({
   selector: 'app-task-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, MatFormField],
   template: `
-    <form [formGroup]="taskForm" (ngSubmit)="onSubmit()"
-          class="task-card p-6 rounded-lg shadow-md mb-8">
+    <form [formGroup]="taskForm" (ngSubmit)="onSubmit()" class="task-card p-6 rounded-lg shadow-md mb-8">
       <div class="space-y-4">
+        <!-- Task Title -->
         <div>
-          <label class="block text-sm font-medium mb-1">Task Title</label>
-          <input type="text" formControlName="title"
-                 class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Task Title</mat-label>
+            <input matInput formControlName="title" placeholder="Enter task title" required>
+            <mat-error *ngIf="taskForm.get('title')?.hasError('required')">Task title is required</mat-error>
+          </mat-form-field>
         </div>
+
+        <!-- Task Description -->
         <div>
-          <label class="block text-sm font-medium mb-1">Description</label>
-          <textarea formControlName="description" rows="3"
-                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange"></textarea>
+          <mat-form-field appearance="fill" class="w-full">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" placeholder="Enter task description" rows="4"
+                      required></textarea>
+            <mat-error *ngIf="taskForm.get('description')?.hasError('required')">Description is required</mat-error>
+          </mat-form-field>
         </div>
-        <button type="submit"
-                class="w-full bg-task-orange text-white py-2 rounded-lg hover:opacity-90 transition">
+
+        <!-- Submit Button -->
+        <button mat-raised-button color="primary" type="submit" class="w-full">
           Add Task
         </button>
       </div>
     </form>
+
   `
 })
 export class TaskFormComponent {
