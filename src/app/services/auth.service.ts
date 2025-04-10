@@ -1,36 +1,62 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root',
 })
 export class AuthService {
-  private isAuthenticated = new BehaviorSubject<boolean>(false);
-  private users: { email: string; password: string }[] = [];
+    private isAuthenticated = new BehaviorSubject<boolean>(false);
+    private apiUrl = 'http://localhost:8080/api/v1'; // Replace with your backend URL
 
-  register(email: string, password: string): boolean {
-    const userExists = this.users.some(user => user.email === email);
-    if (userExists) {
-      return false;
+    constructor(private http: HttpClient) {
+        // Check if the user is already authenticated on app start by checking if JWT is present in localStorage
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            this.isAuthenticated.next(true);
+        }
     }
-    this.users.push({ email, password });
-    return true;
-  }
 
-  login(email: string, password: string): boolean {
-    const user = this.users.find(u => u.email === email && u.password === password);
-    if (user) {
-      this.isAuthenticated.next(true);
-      return true;
+    // Register method sending data to backend
+    register(username: string, email: string, password: string) {
+        const user = { username, email, password };
+        return this.http.post(`${this.apiUrl}/users/save`, user).pipe(
+            catchError((error) => {
+                console.error('Registration failed', error);
+                throw error;
+            })
+        );
     }
-    return false;
-  }
 
-  logout() {
-    this.isAuthenticated.next(false);
-  }
+    // Login method now handles raw token string from the backend
+    // AuthService
 
-  isLoggedIn() {
-    return this.isAuthenticated.asObservable();
-  }
+    login(username: string, password: string) {
+        const user = { username, password };
+        return this.http.post(this.apiUrl + '/users/login', user, { responseType: 'text' }).pipe(
+            catchError((error) => {
+                console.error('Login failed', error);
+                throw error;
+            })
+        );
+    }
+
+
+    // Store token and update authentication state
+    setAuthToken(token: string) {
+        localStorage.setItem('authToken', token);
+        this.isAuthenticated.next(true);
+    }
+
+    // Logout method
+    logout() {
+        localStorage.removeItem('authToken');
+        this.isAuthenticated.next(false);
+    }
+
+    // Observable to track if the user is logged in
+    isLoggedIn() {
+        return this.isAuthenticated.asObservable();
+    }
 }

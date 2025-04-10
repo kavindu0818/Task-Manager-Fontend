@@ -14,25 +14,23 @@ import { AuthService } from '../../services/auth.service';
         <h2 class="text-3xl font-bold mb-6 text-center">Login</h2>
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium mb-1">Email</label>
-            <input type="email" formControlName="email"
+            <label class="block text-sm font-medium mb-1">Username</label>
+            <input type="text" formControlName="username"
                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
-            @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
-              <p class="text-red-500 text-sm mt-1">Please enter a valid email</p>
-            }
+            <p *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.invalid" class="text-red-500 text-sm mt-1">
+              Please enter a valid username
+            </p>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Password</label>
             <input type="password" formControlName="password"
                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
-            @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
-              <p class="text-red-500 text-sm mt-1">Password must be at least 6 characters</p>
-            }
+            <p *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="text-red-500 text-sm mt-1">
+              Password must be at least 6 characters
+            </p>
           </div>
-          @if (errorMessage) {
-            <p class="text-red-500 text-sm text-center">{{errorMessage}}</p>
-          }
-          <button type="submit" 
+          <p *ngIf="errorMessage" class="text-red-500 text-sm text-center">{{errorMessage}}</p>
+          <button type="submit"
                   [disabled]="!loginForm.valid"
                   [class]="loginForm.valid ? 
                     'w-full bg-task-orange text-white py-2 rounded-lg hover:opacity-90 transition' :
@@ -41,7 +39,7 @@ import { AuthService } from '../../services/auth.service';
           </button>
         </form>
         <p class="mt-4 text-center">
-          Don't have an account? 
+          Don't have an account?
           <a routerLink="/signup" class="text-task-orange hover:underline">Sign up</a>
         </p>
       </div>
@@ -53,24 +51,32 @@ export class LoginComponent {
   errorMessage: string = '';
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router,
-    private authService: AuthService
+      private fb: FormBuilder,
+      private router: Router,
+      private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
+  // LoginComponent
+
   onSubmit() {
     if (this.loginForm.valid) {
-      const { email, password } = this.loginForm.value;
-      if (this.authService.login(email, password)) {
-        this.router.navigate(['/tasks']);
-      } else {
-        this.errorMessage = 'Invalid email or password';
-      }
+      const { username, password } = this.loginForm.value;
+      this.authService.login(username, password).subscribe(
+          (token: string) => {  // Expecting a string response here
+            console.log(token);
+            this.authService.setAuthToken(token);  // Save token in localStorage
+            this.router.navigate(['/tasks']);
+          },
+          (error) => {
+            this.errorMessage = 'Invalid username or password';
+          }
+      );
     }
   }
+
 }

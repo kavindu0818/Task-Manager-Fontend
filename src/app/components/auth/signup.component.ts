@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+// import {name} from "tailwindcss";
 
 @Component({
   selector: 'app-signup',
@@ -17,37 +18,36 @@ import { AuthService } from '../../services/auth.service';
             <label class="block text-sm font-medium mb-1">Name</label>
             <input type="text" formControlName="name"
                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
-            @if (signupForm.get('name')?.touched && signupForm.get('name')?.invalid) {
+            <div *ngIf="signupForm.get('name')?.touched && signupForm.get('name')?.invalid">
               <p class="text-red-500 text-sm mt-1">Name is required</p>
-            }
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Email</label>
             <input type="email" formControlName="email"
                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
-            @if (signupForm.get('email')?.touched && signupForm.get('email')?.invalid) {
+            <div *ngIf="signupForm.get('email')?.touched && signupForm.get('email')?.invalid">
               <p class="text-red-500 text-sm mt-1">Please enter a valid email</p>
-            }
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Password</label>
             <input type="password" formControlName="password"
                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-task-orange">
-            @if (signupForm.get('password')?.touched && signupForm.get('password')?.invalid) {
+            <div *ngIf="signupForm.get('password')?.touched && signupForm.get('password')?.invalid">
               <p class="text-red-500 text-sm mt-1">Password must be at least 6 characters</p>
-            }
+            </div>
           </div>
-          @if (errorMessage) {
-            <p class="text-red-500 text-sm text-center">{{errorMessage}}</p>
-          }
-          <button type="submit" 
+          <div *ngIf="errorMessage">
+            <p class="text-red-500 text-sm text-center">{{ errorMessage }}</p>
+          </div>
+          <button type="submit"
                   [disabled]="!signupForm.valid"
-                  [class]="signupForm.valid ? 
-                    'w-full bg-task-orange text-white py-2 rounded-lg hover:opacity-90 transition' :
-                    'w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed'">
+                  [ngClass]="signupForm.valid ? 'w-full bg-task-orange text-white py-2 rounded-lg hover:opacity-90 transition' : 'w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed'">
             Sign Up
           </button>
         </form>
+
         <p class="mt-4 text-center">
           Already have an account? 
           <a routerLink="/login" class="text-task-orange hover:underline">Login</a>
@@ -74,12 +74,22 @@ export class SignupComponent {
 
   onSubmit() {
     if (this.signupForm.valid) {
-      const { email, password } = this.signupForm.value;
-      if (this.authService.register(email, password)) {
-        this.router.navigate(['/login']);
-      } else {
-        this.errorMessage = 'Email already registered';
-      }
+      const { name, email, password } = this.signupForm.value;
+      this.authService.register(name, email, password).subscribe(
+          (response) => {
+            // Navigate to login page after successful registration
+            this.router.navigate(['/login']);
+          },
+          (error) => {
+            // Handle error and show error message
+            if (error.status === 400) {
+              this.errorMessage = 'Email already registered';
+            } else {
+              this.errorMessage = 'An error occurred during registration';
+            }
+          }
+      );
     }
   }
+
 }
